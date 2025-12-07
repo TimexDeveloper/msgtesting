@@ -1,6 +1,16 @@
 // JavaScript code
+// Initialize admin user if not exists
+function initializeAdmin() {
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    if (!users['admin']) {
+        users['admin'] = { password: 'superadmin123', role: 'admin' };
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+}
+
 // Check if user is logged in on page load
 window.onload = function() {
+    initializeAdmin();
     const loggedInUser = sessionStorage.getItem('loggedInUser');
     if (loggedInUser) {
         showChat();
@@ -31,6 +41,15 @@ function showChat() {
     document.getElementById('registration').style.display = 'none';
     document.getElementById('login').style.display = 'none';
     document.getElementById('chat').style.display = 'block';
+
+    // Show admin panel if user is admin
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    if (users[loggedInUser] && users[loggedInUser].role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+    } else {
+        document.getElementById('adminPanel').style.display = 'none';
+    }
 }
 
 // Clear error messages
@@ -60,7 +79,7 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
         return;
     }
 
-    users[username] = password;
+    users[username] = { password: password, role: 'user' };
     // Save updated users object back to localStorage as JSON string
     localStorage.setItem('users', JSON.stringify(users));
     alert('Registration successful! Please login.');
@@ -77,7 +96,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     // Again, using JSON.parse to convert stored string back to object
     // Reminder: localStorage is client-side only and not secure for production use
     let users = JSON.parse(localStorage.getItem('users')) || {};
-    if (users[username] === password) {
+    if (users[username] && users[username].password === password) {
         sessionStorage.setItem('loggedInUser', username);
         showChat();
         loadMessages();
@@ -100,13 +119,9 @@ function sendMessage() {
     const message = input.value.trim();
     if (!message) return;
 
-    addMessage(message, 'sent');
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    addMessage(message, 'sent', loggedInUser);
     input.value = '';
-
-    // Simulate bot response after 1-2 seconds
-    setTimeout(() => {
-        addMessage('Echo: ' + message, 'received');
-    }, 1500);
 }
 
 // Handle Enter key press
@@ -117,33 +132,47 @@ function handleKeyPress(event) {
 }
 
 // Add message to chat
-function addMessage(text, type) {
+function addMessage(text, type, sender) {
     const messagesDiv = document.getElementById('messages');
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message ' + type;
-    messageDiv.textContent = text;
+    messageDiv.textContent = sender ? `${sender}: ${text}` : text;
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-    // Save to sessionStorage (last 10 messages)
-    let messages = JSON.parse(sessionStorage.getItem('messages')) || [];
-    messages.push({ text, type });
-    if (messages.length > 10) {
-        messages.shift();
-    }
-    sessionStorage.setItem('messages', JSON.stringify(messages));
+    // Save to localStorage chatHistory (all messages)
+    let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    chatHistory.push({ sender, text, timestamp: new Date().toISOString() });
+    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
 }
 
-// Load messages from sessionStorage
+// Load messages from localStorage chatHistory
 function loadMessages() {
-    const messages = JSON.parse(sessionStorage.getItem('messages')) || [];
+    const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
     const messagesDiv = document.getElementById('messages');
     messagesDiv.innerHTML = '';
-    messages.forEach(msg => {
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    chatHistory.forEach(msg => {
+        const type = msg.sender === loggedInUser ? 'sent' : 'received';
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'message ' + msg.type;
-        messageDiv.textContent = msg.text;
+        messageDiv.className = 'message ' + type;
+        messageDiv.textContent = `${msg.sender}: ${msg.text}`;
         messagesDiv.appendChild(messageDiv);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Admin functions
+function clearChatHistory() {
+    localStorage.setItem('chatHistory', JSON.stringify([]));
+    document.getElementById('messages').innerHTML = '';
+    alert('Chat history cleared.');
+}
+
+function deleteAllUsersExceptAdmin() {
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    const adminData = users['admin'];
+    users = { 'admin': adminData };
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('All users except Admin have been deleted.');
 }
