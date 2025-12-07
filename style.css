@@ -1,0 +1,200 @@
+/* CSS styles with 3D Neumorphism */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #e0e5ec; /* Light neumorphic background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    perspective: 1000px; /* Add perspective for 3D depth */
+}
+
+.container {
+    background-color: #e0e5ec;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow:
+        20px 20px 40px #bebebe,
+        -20px -20px 40px #ffffff; /* Outset shadow for raised effect */
+    width: 100%;
+    max-width: 400px;
+    transition: transform 0.3s ease;
+}
+
+.container:hover {
+    transform: rotateX(5deg) rotateY(5deg); /* Slight 3D tilt on hover */
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: #e0e5ec;
+    box-shadow:
+        inset 8px 8px 16px #bebebe,
+        inset -8px -8px 16px #ffffff; /* Inset shadow for pressed effect */
+    outline: none;
+    transition: box-shadow 0.3s ease;
+}
+
+input:focus {
+    box-shadow:
+        inset 12px 12px 24px #bebebe,
+        inset -12px -12px 24px #ffffff; /* Deeper inset on focus */
+}
+
+button {
+    padding: 15px;
+    background-color: #e0e5ec;
+    color: #555;
+    border: none;
+    border-radius: 10px;
+    box-shadow:
+        8px 8px 16px #bebebe,
+        -8px -8px 16px #ffffff; /* Outset shadow for raised button */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    box-shadow:
+        inset 8px 8px 16px #bebebe,
+        inset -8px -8px 16px #ffffff; /* Inset on hover for pressed effect */
+    transform: translateY(2px) scale(0.98); /* Slight press and scale */
+}
+
+.link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.link a {
+    color: #555;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link a:hover {
+    text-decoration: underline;
+    color: #333;
+}
+
+.error {
+    color: #d9534f;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+/* Chat styles with neumorphism */
+#chat {
+    max-width: 600px;
+    width: 100%;
+}
+
+#messages {
+    height: 300px;
+    overflow-y: auto;
+    border: none;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #e0e5ec;
+    border-radius: 10px;
+    box-shadow:
+        inset 8px 8px 16px #bebebe,
+        inset -8px -8px 16px #ffffff; /* Inset for container */
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow:
+        5px 5px 10px #bebebe,
+        -5px -5px 10px #ffffff; /* Outset for messages */
+}
+
+.sent {
+    background-color: #e0e5ec;
+    color: #555;
+    text-align: right;
+    box-shadow:
+        5px 5px 10px #bebebe,
+        -5px -5px 10px #ffffff;
+}
+
+.received {
+    background-color: #e0e5ec;
+    color: #555;
+    box-shadow:
+        5px 5px 10px #bebebe,
+        -5px -5px 10px #ffffff;
+}
+
+#messageInput {
+    width: calc(100% - 80px);
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: #e0e5ec;
+    box-shadow:
+        inset 8px 8px 16px #bebebe,
+        inset -8px -8px 16px #ffffff;
+    outline: none;
+}
+
+#sendButton {
+    width: 70px;
+    margin-left: 10px;
+    padding: 15px;
+    background-color: #e0e5ec;
+    color: #555;
+    border: none;
+    border-radius: 10px;
+    box-shadow:
+        8px 8px 16px #bebebe,
+        -8px -8px 16px #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#sendButton:hover {
+    box-shadow:
+        inset 8px 8px 16px #bebebe,
+        inset -8px -8px 16px #ffffff;
+    transform: translateY(2px) scale(0.98);
+}
+
+.logout {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logout button {
+    background-color: #e0e5ec;
+    color: #d9534f;
+    box-shadow:
+        8px 8px 16px #bebebe,
+        -8px -8px 16px #ffffff;
+}
+
+.logout button:hover {
+    box-shadow:
+        inset 8px 8px 16px #bebebe,
+        inset -8px -8px 16px #ffffff;
+    transform: translateY(2px) scale(0.98);
+}
