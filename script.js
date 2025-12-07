@@ -1,9 +1,9 @@
 // JavaScript code
-// Initialize admin user if not exists
+// Initialize admin user only if localStorage is empty (data persistence)
 function initializeAdmin() {
     let users = JSON.parse(localStorage.getItem('users')) || {};
-    if (!users['admin']) {
-        users['admin'] = { password: 'superadmin123', role: 'admin' };
+    if (Object.keys(users).length === 0) {
+        users['admin'] = { password: 'superadmin123', role: 'admin', friends: [] };
         localStorage.setItem('users', JSON.stringify(users));
     }
 }
@@ -50,6 +50,9 @@ function showChat() {
     } else {
         document.getElementById('adminPanel').style.display = 'none';
     }
+
+    // Display friends
+    displayFriends();
 }
 
 // Clear error messages
@@ -79,7 +82,7 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
         return;
     }
 
-    users[username] = { password: password, role: 'user' };
+    users[username] = { password: password, role: 'user', friends: [] };
     // Save updated users object back to localStorage as JSON string
     localStorage.setItem('users', JSON.stringify(users));
     alert('Registration successful! Please login.');
@@ -175,4 +178,52 @@ function deleteAllUsersExceptAdmin() {
     users = { 'admin': adminData };
     localStorage.setItem('users', JSON.stringify(users));
     alert('All users except Admin have been deleted.');
+}
+
+// Friends management
+function addFriend() {
+    const friendUsername = document.getElementById('friendInput').value.trim();
+    if (!friendUsername) {
+        alert('Please enter a username.');
+        return;
+    }
+
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+
+    if (!users[friendUsername]) {
+        alert('User does not exist.');
+        return;
+    }
+
+    if (friendUsername === loggedInUser) {
+        alert('You cannot add yourself as a friend.');
+        return;
+    }
+
+    if (users[loggedInUser].friends.includes(friendUsername)) {
+        alert('This user is already your friend.');
+        return;
+    }
+
+    users[loggedInUser].friends.push(friendUsername);
+    localStorage.setItem('users', JSON.stringify(users));
+    displayFriends();
+    document.getElementById('friendInput').value = '';
+    alert('Friend added successfully.');
+}
+
+function displayFriends() {
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    const friendsList = document.getElementById('friendsList');
+    friendsList.innerHTML = '';
+
+    if (users[loggedInUser] && users[loggedInUser].friends) {
+        users[loggedInUser].friends.forEach(friend => {
+            const li = document.createElement('li');
+            li.textContent = friend;
+            friendsList.appendChild(li);
+        });
+    }
 }

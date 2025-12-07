@@ -42,10 +42,20 @@
                 <button onclick="logout()">Logout</button>
             </div>
             <h2>Chat</h2>
-            <div id="messages"></div>
-            <div>
-                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-                <button id="sendButton" onclick="sendMessage()">Send</button>
+            <div style="display: flex;">
+                <div style="flex: 1;">
+                    <div id="messages"></div>
+                    <div>
+                        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                        <button id="sendButton" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+                <div style="width: 200px; margin-left: 20px;">
+                    <h3>My Friends</h3>
+                    <input type="text" id="friendInput" placeholder="Add friend username">
+                    <button onclick="addFriend()">Add Friend</button>
+                    <ul id="friendsList"></ul>
+                </div>
             </div>
             <!-- Admin Panel -->
             <div id="adminPanel" style="display: none; margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
