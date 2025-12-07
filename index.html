@@ -40,28 +40,44 @@
         <div id="chat" style="display: none;">
             <div class="logout">
                 <button onclick="logout()">Logout</button>
+                <select id="statusSelect" onchange="updateStatus()">
+                    <option value="Online">Online</option>
+                    <option value="Busy">Busy</option>
+                    <option value="Offline">Offline</option>
+                </select>
             </div>
-            <h2>Chat</h2>
-            <div style="display: flex;">
-                <div style="flex: 1;">
-                    <div id="messages"></div>
-                    <div>
-                        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-                        <button id="sendButton" onclick="sendMessage()">Send</button>
-                    </div>
-                </div>
-                <div style="width: 200px; margin-left: 20px;">
-                    <h3>My Friends</h3>
-                    <input type="text" id="friendInput" placeholder="Add friend username">
-                    <button onclick="addFriend()">Add Friend</button>
-                    <ul id="friendsList"></ul>
+            <div class="tabs">
+                <button class="tab active" id="chatTab" onclick="showTab('chat')">Chat</button>
+                <button class="tab" id="friendsTab" onclick="showTab('friends')">Friends</button>
+                <button class="tab" id="adminTab" onclick="showTab('admin')" style="display: none;">Admin</button>
+            </div>
+            <div id="chatTabContent">
+                <h2>Chat</h2>
+                <div id="messages"></div>
+                <div>
+                    <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                    <button id="sendButton" onclick="sendMessage()">Send</button>
                 </div>
             </div>
-            <!-- Admin Panel -->
-            <div id="adminPanel" style="display: none; margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <h3>Admin Panel</h3>
+            <div id="friendsTabContent" style="display: none;">
+                <h2>Friends</h2>
+                <div>
+                    <input type="text" id="friendInput" placeholder="Send friend request">
+                    <button onclick="sendFriendRequest()">Send Request</button>
+                </div>
+                <h3>My Friends</h3>
+                <ul id="friendsList"></ul>
+                <h3>Friend Requests</h3>
+                <ul id="requestsList"></ul>
+            </div>
+            <div id="adminTabContent" style="display: none;">
+                <h2>Admin Panel</h2>
+                <div>
+                    <input type="text" id="banInput" placeholder="Ban username">
+                    <button onclick="banUser()">Ban User</button>
+                </div>
                 <button onclick="clearChatHistory()">Clear Chat History</button>
-                <button onclick="deleteAllUsersExceptAdmin()">Delete All Users (Except Admin)</button>
+                <button onclick="deleteAllUsersExceptAdmin()">Delete All Users (Except Timex)</button>
             </div>
         </div>
     </div>

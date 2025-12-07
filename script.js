@@ -3,7 +3,15 @@
 function initializeAdmin() {
     let users = JSON.parse(localStorage.getItem('users')) || {};
     if (Object.keys(users).length === 0) {
-        users['admin'] = { password: 'superadmin123', role: 'admin', friends: [] };
+        users['Timex'] = {
+            password: '5555',
+            role: 'admin',
+            friends: [],
+            requestsSent: [],
+            requestsReceived: [],
+            status: 'Online',
+            isBanned: false
+        };
         localStorage.setItem('users', JSON.stringify(users));
     }
 }
@@ -42,17 +50,20 @@ function showChat() {
     document.getElementById('login').style.display = 'none';
     document.getElementById('chat').style.display = 'block';
 
-    // Show admin panel if user is admin
+    // Show admin tab if user is admin
     const loggedInUser = sessionStorage.getItem('loggedInUser');
     let users = JSON.parse(localStorage.getItem('users')) || {};
     if (users[loggedInUser] && users[loggedInUser].role === 'admin') {
-        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminTab').style.display = 'inline-block';
     } else {
-        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminTab').style.display = 'none';
     }
 
-    // Display friends
-    displayFriends();
+    // Set initial status
+    document.getElementById('statusSelect').value = users[loggedInUser].status;
+
+    // Show chat tab by default
+    showTab('chat');
 }
 
 // Clear error messages
@@ -82,7 +93,15 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
         return;
     }
 
-    users[username] = { password: password, role: 'user', friends: [] };
+    users[username] = {
+        password: password,
+        role: 'user',
+        friends: [],
+        requestsSent: [],
+        requestsReceived: [],
+        status: 'Online',
+        isBanned: false
+    };
     // Save updated users object back to localStorage as JSON string
     localStorage.setItem('users', JSON.stringify(users));
     alert('Registration successful! Please login.');
@@ -100,6 +119,10 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     // Reminder: localStorage is client-side only and not secure for production use
     let users = JSON.parse(localStorage.getItem('users')) || {};
     if (users[username] && users[username].password === password) {
+        if (users[username].isBanned) {
+            document.getElementById('loginError').textContent = 'Your account has been banned.';
+            return;
+        }
         sessionStorage.setItem('loggedInUser', username);
         showChat();
         loadMessages();
@@ -180,8 +203,34 @@ function deleteAllUsersExceptAdmin() {
     alert('All users except Admin have been deleted.');
 }
 
-// Friends management
-function addFriend() {
+// Tab management
+function showTab(tabName) {
+    document.getElementById('chatTabContent').style.display = tabName === 'chat' ? 'block' : 'none';
+    document.getElementById('friendsTabContent').style.display = tabName === 'friends' ? 'block' : 'none';
+    document.getElementById('adminTabContent').style.display = tabName === 'admin' ? 'block' : 'none';
+
+    // Update active tab
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(tabName + 'Tab').classList.add('active');
+
+    if (tabName === 'friends') {
+        displayFriends();
+        displayFriendRequests();
+    }
+}
+
+// Status management
+function updateStatus() {
+    const status = document.getElementById('statusSelect').value;
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    users[loggedInUser].status = status;
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('Status updated to ' + status);
+}
+
+// Friends management with requests
+function sendFriendRequest() {
     const friendUsername = document.getElementById('friendInput').value.trim();
     if (!friendUsername) {
         alert('Please enter a username.');
@@ -206,11 +255,46 @@ function addFriend() {
         return;
     }
 
-    users[loggedInUser].friends.push(friendUsername);
+    if (users[loggedInUser].requestsSent.includes(friendUsername)) {
+        alert('Request already sent.');
+        return;
+    }
+
+    // Add to sent and received
+    users[loggedInUser].requestsSent.push(friendUsername);
+    users[friendUsername].requestsReceived.push(loggedInUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    document.getElementById('friendInput').value = '';
+    alert('Friend request sent.');
+}
+
+function acceptRequest(username) {
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+
+    // Add to friends
+    users[loggedInUser].friends.push(username);
+    users[username].friends.push(loggedInUser);
+
+    // Remove from requests
+    users[loggedInUser].requestsReceived = users[loggedInUser].requestsReceived.filter(u => u !== username);
+    users[username].requestsSent = users[username].requestsSent.filter(u => u !== loggedInUser);
+
     localStorage.setItem('users', JSON.stringify(users));
     displayFriends();
-    document.getElementById('friendInput').value = '';
-    alert('Friend added successfully.');
+    displayFriendRequests();
+}
+
+function declineRequest(username) {
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+
+    // Remove from requests
+    users[loggedInUser].requestsReceived = users[loggedInUser].requestsReceived.filter(u => u !== username);
+    users[username].requestsSent = users[username].requestsSent.filter(u => u !== loggedInUser);
+
+    localStorage.setItem('users', JSON.stringify(users));
+    displayFriendRequests();
 }
 
 function displayFriends() {
@@ -222,8 +306,70 @@ function displayFriends() {
     if (users[loggedInUser] && users[loggedInUser].friends) {
         users[loggedInUser].friends.forEach(friend => {
             const li = document.createElement('li');
-            li.textContent = friend;
+            li.textContent = friend + ' (' + (users[friend] ? users[friend].status : 'Unknown') + ')';
             friendsList.appendChild(li);
         });
     }
+}
+
+function displayFriendRequests() {
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    const requestsList = document.getElementById('requestsList');
+    requestsList.innerHTML = '';
+
+    if (users[loggedInUser] && users[loggedInUser].requestsReceived) {
+        users[loggedInUser].requestsReceived.forEach(requester => {
+            const li = document.createElement('li');
+            li.textContent = requester;
+            const acceptBtn = document.createElement('button');
+            acceptBtn.textContent = 'Accept';
+            acceptBtn.onclick = () => acceptRequest(requester);
+            const declineBtn = document.createElement('button');
+            declineBtn.textContent = 'Decline';
+            declineBtn.onclick = () => declineRequest(requester);
+            li.appendChild(acceptBtn);
+            li.appendChild(declineBtn);
+            requestsList.appendChild(li);
+        });
+    }
+}
+
+// Admin functions
+function banUser() {
+    const username = document.getElementById('banInput').value.trim();
+    if (!username) {
+        alert('Please enter a username.');
+        return;
+    }
+
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    if (!users[username]) {
+        alert('User does not exist.');
+        return;
+    }
+
+    if (username === 'Timex') {
+        alert('Cannot ban admin.');
+        return;
+    }
+
+    users[username].isBanned = true;
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('User banned.');
+    document.getElementById('banInput').value = '';
+}
+
+function clearChatHistory() {
+    localStorage.setItem('chatHistory', JSON.stringify([]));
+    document.getElementById('messages').innerHTML = '';
+    alert('Chat history cleared.');
+}
+
+function deleteAllUsersExceptAdmin() {
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+    const adminData = users['Timex'];
+    users = { 'Timex': adminData };
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('All users except Timex have been deleted.');
 }
